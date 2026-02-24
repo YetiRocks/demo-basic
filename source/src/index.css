@@ -1,0 +1,63 @@
+/* Basic Demo */
+.panel-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.counter-display {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: var(--space-6);
+  font-family: var(--font-family-mono);
+}
+
+.counter-buttons {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.panel-content > .btn {
+  width: 100%;
+  max-width: 400px;
+  font-size: var(--font-size-lg);
+  padding: var(--space-3) var(--space-4);
+}
+
+.results-container {
+  width: 100%;
+  max-width: 400px;
+  height: 120px;
+  margin-top: var(--space-6);
+  background: var(--color-black);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  overflow: auto;
+  display: flex;
+}
+
+.results-container .results-pre {
+  flex: 1;
+  padding: var(--space-4);
+  margin: 0;
+}
+
+.results-container .empty-state {
+  flex: 1;
+  padding: var(--space-4);
+  font-size: var(--font-size-xs);
+}
+
+.counter-buttons .btn {
+  width: 64px;
+  height: 64px;
+  font-size: 1.5rem;
+  border-radius: var(--radius-lg);
+  padding: 0;
+}

@@ -1,0 +1,6 @@
+## Simple counter schema (basic demo)
+
+type TableName @table(database: "demo-basic") @export {
+    id: ID! @primaryKey
+    count: Int!
+}

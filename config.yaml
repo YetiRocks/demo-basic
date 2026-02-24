@@ -1,0 +1,25 @@
+name: "Basic Demo"
+app_id: "demo-basic"
+version: "1.0.0"
+description: "Simple counter with persistent state and a custom Rust greeting endpoint"
+enabled: true
+rest: true
+graphql: true
+
+schemas:
+  - schemas/basic.graphql
+  - schemas/schema.graphql
+
+resources:
+  - resources/*.rs
+
+static_files:
+  path: web
+  route: /
+  index: index.html
+  notFound:
+    file: index.html
+    statusCode: 200
+  build:
+    sourceDir: source
+    command: npm run build
