@@ -8,7 +8,6 @@ graphql: true
 
 schemas:
   - schemas/basic.graphql
-  - schemas/schema.graphql
 
 resources:
   - resources/*.rs

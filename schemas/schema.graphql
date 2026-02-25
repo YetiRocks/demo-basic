@@ -1,9 +1,0 @@
-type BetaSignup @table(database: "demo-basic") @export {
-    id: ID! @primaryKey
-    name: String!
-    email: String!
-    company: String
-    title: String
-    idea: String
-    created_at: String! @createdTime
-}
