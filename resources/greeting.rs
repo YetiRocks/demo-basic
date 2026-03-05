@@ -16,7 +16,14 @@ impl Resource for GreetingResource {
         "greeting"
     }
 
-    fn is_public(&self) -> bool { true }
+    fn allow_read(
+        &self,
+        _access: &dyn AccessControl,
+        _target: &RequestTarget,
+        _params: &ResourceParams,
+    ) -> bool {
+        true
+    }
 
     get!(_request, _ctx, {
         yeti_log!(info, "Greeting requested");
