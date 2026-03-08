@@ -50,7 +50,7 @@ type TableName @table @export {
     count: Int!
 }`
 
-const GREETING_RS = `use yeti_core::prelude::*;
+const GREETING_RS = `use yeti_sdk::prelude::*;
 
 /// Custom greeting resource using concise syntax
 resource!(Greeting {

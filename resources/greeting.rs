@@ -1,34 +1,7 @@
-use yeti_core::prelude::*;
+/// Import Yeti's JS-like abstractions (!)
+use yeti_sdk::prelude::*;
 
-// Simple greeting resource (public, no auth required).
-//
-// Uses yeti_log! to emit telemetry-visible log events.
-// Note: In production (environment: production), only error-level
-// logs are captured by the telemetry system.
-
-pub type Greeting = GreetingResource;
-
-#[derive(Default)]
-pub struct GreetingResource;
-
-impl Resource for GreetingResource {
-    fn name(&self) -> &str {
-        "greeting"
-    }
-
-    fn allow_read(
-        &self,
-        _access: &dyn AccessControl,
-        _target: &RequestTarget,
-        _params: &ResourceParams,
-    ) -> bool {
-        true
-    }
-
-    get!(_request, _ctx, {
-        yeti_log!(info, "Greeting requested");
-        reply().json(json!({"greeting": "Hello, World!"}))
-    });
-}
-
-register_resource!(GreetingResource);
+/// Simple custom resource using concise syntax
+resource!(Greeting {
+  get => json!({"greeting": "Hello, World!"})
+});

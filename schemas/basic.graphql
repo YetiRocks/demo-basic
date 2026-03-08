@@ -1,6 +1,6 @@
 ## Simple counter schema (basic demo)
 
-type TableName @table(database: "demo-basic") @export(public: [read, create, update, delete]) {
+type TableName @table(database: "demo-basic") @export(public: [read, update]) {
     id: ID! @primaryKey
     count: Int!
 }
