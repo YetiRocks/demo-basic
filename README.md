@@ -54,13 +54,8 @@ name: "Basic Demo"
 app_id: "demo-basic"
 version: "1.0.0"
 description: "Simple counter with persistent state and a custom Rust greeting endpoint"
-enabled: true
-rest: true
-graphql: true
-
 schemas:
   - schemas/basic.graphql
-  - schemas/schema.graphql
 
 resources:
   - resources/*.rs
