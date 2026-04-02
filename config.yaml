@@ -1,5 +1,6 @@
 name: "Basic Demo"
 app_id: "demo-basic"
+customer_id: "yeti"
 version: "1.0.0"
 description: "Simple counter with persistent state and a custom Rust greeting endpoint"
 schemas:
