@@ -4,14 +4,16 @@ customer_id: "yeti"
 version: "1.0.0"
 description: "Simple counter with persistent state and a custom Rust greeting endpoint"
 schemas:
-  - schemas/basic.graphql
+  path: schemas/basic.graphql
 
 resources:
-  - resources/*.rs
+  path: resources/*.rs
+  route: /api
 
-static_files:
+static:
   path: web
+  route: /
   spa: true
   build:
-    sourceDir: source
+    source: source
     command: npm run build

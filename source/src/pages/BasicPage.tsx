@@ -25,8 +25,8 @@ hljs.registerLanguage('graphql', () => ({
   ],
 }))
 
-// Get the base URL for API calls
-const BASE_URL = window.location.origin + '/demo-basic'
+// API calls go through the resource route
+
 const COUNTER_ID = 'main-counter'
 
 // Highlighted code panel (used as the entire bottom section content)
@@ -180,7 +180,7 @@ export function BasicPage() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/TableName/${COUNTER_ID}`)
+        const response = await fetch(`${RESOURCE_ROUTE}/TableName/${COUNTER_ID}`)
         if (response.ok) {
           const data = await response.json()
           setCount(data.count || 0)
@@ -195,7 +195,7 @@ export function BasicPage() {
   // Update counter via REST API
   const updateCounter = useCallback(async (newCount: number) => {
     try {
-      const response = await fetch(`${BASE_URL}/TableName/${COUNTER_ID}`, {
+      const response = await fetch(`${RESOURCE_ROUTE}/TableName/${COUNTER_ID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +236,7 @@ export function BasicPage() {
     setGreetingError(null)
 
     try {
-      const response = await fetch(`${BASE_URL}/greeting`)
+      const response = await fetch(`${RESOURCE_ROUTE}/greeting`)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
