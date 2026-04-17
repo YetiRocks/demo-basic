@@ -180,7 +180,7 @@ export function BasicPage() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const response = await fetch(`${RESOURCE_ROUTE}/TableName/${COUNTER_ID}`)
+        const response = await fetch(`${__STATIC_ROOT__}/${__RESOURCES_ROOT__}/TableName/${COUNTER_ID}`)
         if (response.ok) {
           const data = await response.json()
           setCount(data.count || 0)
@@ -195,7 +195,7 @@ export function BasicPage() {
   // Update counter via REST API
   const updateCounter = useCallback(async (newCount: number) => {
     try {
-      const response = await fetch(`${RESOURCE_ROUTE}/TableName/${COUNTER_ID}`, {
+      const response = await fetch(`${__STATIC_ROOT__}/${__RESOURCES_ROOT__}/TableName/${COUNTER_ID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -236,7 +236,7 @@ export function BasicPage() {
     setGreetingError(null)
 
     try {
-      const response = await fetch(`${RESOURCE_ROUTE}/greeting`)
+      const response = await fetch(`${__STATIC_ROOT__}/${__RESOURCES_ROOT__}/greeting`)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
