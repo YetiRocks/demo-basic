@@ -1,0 +1,21 @@
+# Cargo manifest for demo-basic — Phase 48 static-crate shape.
+#
+# Dual-mode during the dylib → static migration window. yeti-compiler
+# reads only [dependencies] when building the dylib; cargo uses the
+# full file when building the static library this crate compiles to.
+
+[package]
+name = "demo-basic"
+version = "1.0.0"
+edition = "2024"
+description = "Simple counter + greeting endpoint — Phase 48 static-crate shape."
+
+[lib]
+name = "demo_basic"
+path = "src/lib.rs"
+
+[workspace]
+
+[dependencies]
+yeti-sdk = { path = "../../../Developer/yeti/crates/yeti-sdk", features = ["workspace"] }
+serde_json = "1"
