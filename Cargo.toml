@@ -1,0 +1,13 @@
+[package]
+name = "demo-basic"
+edition = "2024"
+description = "Basic Demo"
+version = "1.0.0"
+
+[package.metadata.app]
+customer_id = "yeti"
+schemas = "schemas/basic.graphql"
+resources = "resources/*.rs"
+static = { path = "web", root = "/", source = "source", spa = true, build = "npm install && npm run build" }
+
+[dependencies]
