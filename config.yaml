@@ -1,0 +1,20 @@
+name: "Basic Demo"
+app_id: "demo-basic"
+customer_id: "yeti"
+version: "1.0.0"
+description: "Basic Demo"
+
+schemas:
+  path: schemas/basic.graphql
+
+resources:
+  path: "resources/*.rs"
+  root: /api
+
+static:
+  path: web
+  root: /
+  spa: true
+  build:
+    source: source
+    command: npm install && npm run build
