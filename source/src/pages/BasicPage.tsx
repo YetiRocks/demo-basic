@@ -1,46 +1,13 @@
-import { useState, useCallback, useEffect, useRef } from 'react'
-import hljs from 'highlight.js/lib/core'
-import rust from 'highlight.js/lib/languages/rust'
-import { syntaxHighlight } from '../utils.ts'
-
-hljs.registerLanguage('rust', rust)
-
-// Register GraphQL language for highlight.js
-hljs.registerLanguage('graphql', () => ({
-  name: 'GraphQL',
-  aliases: ['gql'],
-  keywords: {
-    keyword: 'type input enum union interface implements extend schema directive scalar fragment query mutation subscription on',
-    literal: 'true false null',
-  },
-  contains: [
-    hljs.HASH_COMMENT_MODE,
-    hljs.QUOTE_STRING_MODE,
-    hljs.NUMBER_MODE,
-    { className: 'meta', begin: '\\@[a-zA-Z_]\\w*' },
-    { className: 'type', begin: '\\b(ID|String|Int|Float|Boolean|Date)\\b' },
-    { className: 'attr', begin: '[a-zA-Z_]\\w*(?=\\s*:)' },
-    { className: 'punctuation', begin: '[!{}()\\[\\]:=|]' },
-    { className: 'variable', begin: '\\$[a-zA-Z_]\\w*' },
-  ],
-}))
+import { useState, useCallback, useEffect } from 'react'
+import CodeBlock from '../components/CodeBlock'
 
 // API calls go through the resource route
 
 const COUNTER_ID = 'main-counter'
 
-// Highlighted code panel (used as the entire bottom section content)
+// Adapter — delegates to the shared CodeBlock.
 function CodePane({ language, children }: { language: string; children: string }) {
-  const codeRef = useRef<HTMLElement>(null)
-  useEffect(() => {
-    if (codeRef.current) {
-      codeRef.current.removeAttribute('data-highlighted')
-      hljs.highlightElement(codeRef.current)
-    }
-  }, [children])
-  return (
-    <pre className="code-pane"><code ref={codeRef} className={`language-${language}`}>{children}</code></pre>
-  )
+  return <CodeBlock value={children} language={language} />
 }
 
 const SCHEMA_GRAPHQL = `## Simple counter schema
@@ -142,18 +109,9 @@ function GreetingPanel({ result, loading, error, badge, badgeSuccess, onFetch }:
             <EmptyState message="Click the button to fetch greeting" />
           </div>
         ) : error ? (
-          <div className="results-container">
-            <pre className="results-pre error-text">{error}</pre>
-          </div>
+          <CodeBlock value={error} language="text" className="error-text" />
         ) : (
-          <div className="results-container">
-            <pre
-              className="results-pre"
-              dangerouslySetInnerHTML={{
-                __html: syntaxHighlight(JSON.stringify(result, null, 2))
-              }}
-            />
-          </div>
+          <CodeBlock value={JSON.stringify(result, null, 2)} language="json" />
         )}
       </div>
       <div className="panel-header">
