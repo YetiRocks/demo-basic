@@ -254,37 +254,38 @@ Storage: embedded RocksDB, database "demo-basic"
 
 ## Configuration
 
-### config.yaml
+App configuration lives in `Cargo.toml` under `[package.metadata.app]`. There is no separate `config.yaml` or `services.yaml` -- yeti reads everything it needs from the crate manifest.
 
-```yaml
-name: "Basic Demo"
-app_id: "demo-basic"
-version: "1.0.0"
-description: "Simple counter with persistent state and a custom Rust greeting endpoint"
-schemas:
-  path: schemas/basic.graphql
+```toml
+[package]
+name = "demo-basic"
+version = "1.0.0"
+description = "Simple counter with persistent state and a custom Rust greeting endpoint"
 
-resources:
-  path: resources/*.rs
-  route: /api
-
-static:
-  path: web
-  route: /
-  spa: true
-  build:
-    source: source
-    command: npm run build
+[package.metadata.app]
+schemas = "schemas/basic.graphql"
+resources = "resources/*.rs"
+static = { path = "web", source = "source", spa = true, build = "npm install && npm run build" }
 ```
 
 | Key | Purpose |
 |-----|---------|
-| `schemas.path` | GraphQL schema file. Each `@table` type becomes a RocksDB-backed table with auto-generated REST/SSE/MQTT/MCP endpoints. |
-| `resources.path` | Glob pattern for Rust resource files. Each file is compiled into a native plugin and routed by struct name. |
-| `resources.route` | URL prefix for resource and table endpoints (e.g., `/api`). |
+| `schemas` | GraphQL schema file. Each `@table` type becomes a RocksDB-backed table with auto-generated REST/SSE/MQTT/MCP endpoints. |
+| `resources` | Glob pattern for Rust resource files. Each file is compiled into a native plugin and routed by struct name. |
 | `static.path` | Directory containing built static assets (output of `npm run build`). |
+| `static.source` | React/Vite source directory used when `static.path` is empty. |
 | `static.spa` | Enables SPA routing -- unknown paths serve `index.html` with a 200 status. |
-| `static.build` | Auto-build configuration. Yeti runs the command from `source` if `path` is empty or missing. |
+| `static.build` | Build command yeti runs from `source` when no built assets exist. |
+
+### Hooks
+
+Pre- and post-request shell hooks can be declared under `[package.metadata.app.hooks]`:
+
+```toml
+[package.metadata.app.hooks]
+pre_request = ["./hooks/validate.sh"]
+post_request_failure = ["./hooks/alert.sh"]
+```
 
 ### Frontend Development
 
@@ -319,7 +320,7 @@ In development mode, all endpoints are accessible without authentication regardl
 | `GET /api/greeting` | No | Custom resources are public by default in dev |
 | Static files (`/`) | No | Always public |
 
-To add authentication, include an `auth:` section in config.yaml and configure yeti-auth with JWT, Basic Auth, or OAuth providers.
+To add authentication, declare a `[package.metadata.auth]` section in `Cargo.toml` -- supported methods, JWT settings, OAuth providers, and role rules all live there. UI apps can drop in the shared `Login.tsx` page and `useAuth` hook to gate the SPA without writing custom code.
 
 ---
 
@@ -327,7 +328,7 @@ To add authentication, include an `auth:` section in config.yaml and configure y
 
 ```
 demo-basic/
-├── config.yaml              # App configuration (schemas, resources, static files)
+├── Cargo.toml               # App configuration under [package.metadata.app]
 ├── schemas/
 │   └── basic.graphql        # Counter table schema with @export directive
 ├── resources/
@@ -337,18 +338,26 @@ demo-basic/
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   └── src/
-│       ├── main.tsx         # Entry point
-│       ├── App.tsx          # Layout with nav bar and two-column grid
-│       ├── pages/
-│       │   └── BasicPage.tsx    # Counter + greeting panels with source display
+│       ├── main.tsx              # Entry point
+│       ├── App.tsx               # Thin shell -- wires auth gate + page
+│       ├── api.ts                # Fetch helpers
+│       ├── types.ts              # Shared TypeScript types
+│       ├── utils.ts              # JSON syntax highlighting utility
 │       ├── components/
-│       │   └── Footer.tsx       # Footer component
-│       ├── utils.ts         # JSON syntax highlighting utility
-│       ├── theme.ts         # Theme configuration
-│       ├── index.css        # Global styles
-│       └── yeti.css         # Yeti component styles
+│       │   └── Footer.tsx        # Shared UI primitives
+│       ├── hooks/
+│       │   └── useAuth.ts        # Auth state hook (template)
+│       ├── pages/
+│       │   ├── BasicPage.tsx     # Counter + greeting panels with source display
+│       │   └── Login.tsx         # Configurable login page (template)
+│       └── styles/
+│           ├── _vars.css         # Per-app brand colors and shared tokens
+│           ├── yeti.css          # Canonical Yeti stylesheet
+│           └── index.css         # App-specific overrides
 └── web/                     # Built static assets (auto-generated)
 ```
+
+The `src/` layout is the standard yeti UI app structure: a thin `App.tsx`, root utility files (`api.ts`, `types.ts`, `utils.ts`), shared UI in `components/`, hooks in `hooks/`, page components in `pages/`, and stylesheets in `styles/`. `yeti.css` is the canonical stylesheet shared across all yeti apps; `_vars.css` holds this app's brand tokens; `index.css` carries app-specific overrides.
 
 ---
 
