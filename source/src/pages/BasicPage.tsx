@@ -109,9 +109,13 @@ function GreetingPanel({ result, loading, error, badge, badgeSuccess, onFetch }:
             <EmptyState message="Click the button to fetch greeting" />
           </div>
         ) : error ? (
-          <CodeBlock value={error} language="text" className="error-text" />
+          <div className="results-container">
+            <CodeBlock value={error} language="text" className="error-text" />
+          </div>
         ) : (
-          <CodeBlock value={JSON.stringify(result, null, 2)} language="json" />
+          <div className="results-container">
+            <CodeBlock value={JSON.stringify(result, null, 2)} language="json" />
+          </div>
         )}
       </div>
       <div className="panel-header">
