@@ -151,7 +151,7 @@ Browser / curl / AI Agent
 
 **Schema path:** GraphQL type definition -> yeti schema loader -> REST routes + SSE + MQTT + MCP auto-generated -> RocksDB storage.
 
-**Plugin path:** Rust source file -> yeti plugin compiler -> native `.dylib` -> loaded at startup -> routed by name.
+**Plugin path:** Rust source file -> yeti plugin compiler -> wasm32-wasip2 component -> loaded at startup -> routed by name.
 
 **Static path:** Vite source -> `npm run build` (auto-triggered) -> `web/` directory -> served at `/demo-basic/` with SPA fallback.
 
