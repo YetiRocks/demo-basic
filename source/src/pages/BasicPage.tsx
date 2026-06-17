@@ -1,28 +1,35 @@
 import { useState, useCallback, useEffect } from 'react'
 import CodeBlock from '../components/CodeBlock'
+import { getCellConfig } from '../cellConfig'
 
-// API calls go through the resource route
+// Per-cell config: API base + the SDK source/schema shown in the panels.
+// Defaults to the canonical demo-basic (Rust, same-origin /demo-basic/api).
+const cell = getCellConfig()
 
 const COUNTER_ID = 'main-counter'
+
+// File extensions per CodeMirror grammar — drives the greeting source-pane
+// label (e.g. `greeting.rs` for rust, `greeting.py` for python).
+const SOURCE_EXTENSIONS: Record<string, string> = {
+  rust: 'rs',
+  rs: 'rs',
+  python: 'py',
+  py: 'py',
+  typescript: 'ts',
+  ts: 'ts',
+  javascript: 'js',
+  js: 'js',
+  go: 'go',
+}
+
+function sourceFilename(stem: string, language: string): string {
+  return `${stem}.${SOURCE_EXTENSIONS[language] ?? language}`
+}
 
 // Adapter — delegates to the shared CodeBlock.
 function CodePane({ language, children }: { language: string; children: string }) {
   return <CodeBlock value={children} language={language} />
 }
-
-const SCHEMA_GRAPHQL = `## Simple counter schema
-
-type TableName @table @export {
-    id: ID! @primaryKey
-    count: Int!
-}`
-
-const GREETING_RS = `use yeti_sdk::prelude::*;
-
-/// Custom greeting resource using concise syntax
-resource!(Greeting {
-    get => json!({"greeting": "Hello, World!"})
-});`
 
 // Counter Panel
 interface CounterPanelProps {
@@ -59,9 +66,9 @@ function CounterPanel({ count, onIncrement, onDecrement }: CounterPanelProps) {
       </div>
       <div className="panel-header">
         <span className="panel-title">schema.graphql</span>
-        <span className="panel-badge">GraphQL</span>
+        <span className="panel-badge">{cell.schemaLanguage}</span>
       </div>
-      <CodePane language="graphql">{SCHEMA_GRAPHQL}</CodePane>
+      <CodePane language={cell.schemaLanguage}>{cell.schemaSource}</CodePane>
     </div>
   )
 }
@@ -119,10 +126,14 @@ function GreetingPanel({ result, loading, error, badge, badgeSuccess, onFetch }:
         )}
       </div>
       <div className="panel-header">
-        <span className="panel-title">greeting.rs</span>
-        <span className="panel-badge">Rust</span>
+        <span className="panel-title">{sourceFilename('greeting', cell.greetingLanguage)}</span>
+        <span className="panel-badge">{cell.greetingLanguage}</span>
       </div>
-      <CodePane language="rust">{GREETING_RS}</CodePane>
+      <CodePane language={cell.greetingLanguage}>{cell.greetingSource}</CodePane>
+      <p className="panel-caption">
+        Same SDK resource, whether this cell runs <strong>{cell.location}</strong> or remote — the matrix's
+        point: write the resource once, and local ↔ remote is unchanged.
+      </p>
     </div>
   )
 }
@@ -142,7 +153,7 @@ export function BasicPage() {
   useEffect(() => {
     const fetchCount = async () => {
       try {
-        const response = await fetch(`${__STATIC_ROOT__}/${__RESOURCES_ROOT__}/TableName/${COUNTER_ID}`)
+        const response = await fetch(`${cell.apiBase}/TableName/${COUNTER_ID}`)
         if (response.ok) {
           const data = await response.json()
           setCount(data.count || 0)
@@ -157,7 +168,7 @@ export function BasicPage() {
   // Update counter via REST API
   const updateCounter = useCallback(async (newCount: number) => {
     try {
-      const response = await fetch(`${__STATIC_ROOT__}/${__RESOURCES_ROOT__}/TableName/${COUNTER_ID}`, {
+      const response = await fetch(`${cell.apiBase}/TableName/${COUNTER_ID}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -198,7 +209,7 @@ export function BasicPage() {
     setGreetingError(null)
 
     try {
-      const response = await fetch(`${__STATIC_ROOT__}/${__RESOURCES_ROOT__}/greeting`)
+      const response = await fetch(`${cell.apiBase}/greeting`)
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)

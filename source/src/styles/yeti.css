@@ -193,6 +193,29 @@ code {
   }
 }
 
+/* Cell-identity badge (YTC-702): language / format / location for this
+   demo-matrix cell. Mirrors the .panel-badge pill treatment. */
+.cell-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-family-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-grey);
+  background: var(--color-white-overlay);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.cell-badge-part {
+  color: var(--color-white);
+}
+
+.cell-badge-sep {
+  color: var(--color-grey);
+}
+
 .nav-hamburger {
   display: none;
   padding: var(--space-2);
@@ -389,6 +412,23 @@ code {
   padding: 0 var(--space-4);
   background: var(--color-black-overlay);
   border-bottom: 1px solid var(--color-border-primary);
+}
+
+/* Caption under the source pane (YTC-702): the write-once, local↔remote point. */
+.panel-caption {
+  flex-shrink: 0;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+  color: var(--color-grey);
+  background: var(--color-black-overlay);
+  border-top: 1px solid var(--color-border-primary);
+
+  & strong {
+    color: var(--color-white);
+    font-weight: var(--font-weight-semibold);
+  }
 }
 
 .panel-content {
