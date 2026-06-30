@@ -4,10 +4,32 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Single source of truth. Must match this app's config.yaml and ~/yeti/yeti-config.yaml.
-//   STATIC_ROOT    = '' for root_app, otherwise '/' + app_id
-//   RESOURCES_ROOT = resources.route (no slashes)
-const STATIC_ROOT = '/demo-basic'
+// Mount-agnostic bundle (founder-locked architecture):
+//
+// The compiled web assets ride embedded in a SIGNED, content-addressed wasm
+// component, so the artifact must be BYTE-IDENTICAL wherever it runs — its
+// digest + cosign signature are preserved. The deployment mount is therefore
+// applied at SERVE time by the Yeti web server (the router injects
+// `<base href="{mount}/">` + `window.__YETI_BASE_PATH` into the served
+// index.html), never baked at build time.
+//
+//   - `base: './'` emits RELATIVE asset URLs and makes Vite's lazy chunks
+//     self-resolve against their own URL at any mount/depth.
+//   - `__STATIC_ROOT__` (the routing/API base, no trailing slash) becomes a
+//     RUNTIME read of `window.__YETI_BASE_PATH` (fallback `/`). With no
+//     injector (`npm run dev`) the global is undefined → `/`, so assets resolve
+//     at the dev root and HMR is intact.
+//
+// There is no build-time base env: the same bundle serves at a prod subdomain
+// root AND locally under a nested path, with no per-mount rebuild.
+
+// `__STATIC_ROOT__` is mapped to a runtime global (a dotted entity name — the
+// only non-literal form esbuild `define` accepts). The served index.html sets
+// `window.__YETI_STATIC_ROOT__` in <head> (computed from the host-injected
+// `window.__YETI_BASE_PATH`, no trailing slash) before any module evaluates, so
+// every existing `__STATIC_ROOT__` call site reads the mount at runtime with no
+// source change. Absent (`npm run dev`) → `/`.
+const RUNTIME_STATIC_ROOT = 'window.__YETI_STATIC_ROOT__'
 const RESOURCES_ROOT = 'api'
 
 // Read yeti server port from ~/yeti/yeti-config.yaml (3 levels up from this file)
@@ -16,14 +38,31 @@ const yetiYaml = readFileSync(resolve(__dir, '../../../yeti-config.yaml'), 'utf-
 const YETI_PORT = parseInt(yetiYaml.match(/^port:\s*(\d+)/m)?.[1] ?? '9996', 10)
 
 export default defineConfig({
-  base: `${STATIC_ROOT}/`,
+  // Relative base: assets resolve against the served <base href>, byte-identical
+  // at every mount.
+  base: './',
   define: {
-    __STATIC_ROOT__: JSON.stringify(STATIC_ROOT),
+    // Runtime base reads (NOT build-time constants): each expands to a JS
+    // expression evaluated in the browser against window.__YETI_BASE_PATH.
+    __STATIC_ROOT__: RUNTIME_STATIC_ROOT,
     __RESOURCES_ROOT__: JSON.stringify(RESOURCES_ROOT),
+    // YTC-702 demo-matrix parameterization. Each cell (language × format ×
+    // location) overrides these through VITE_* env at build time; with NO
+    // env set every value is '' and cellConfig.ts applies its canonical
+    // `|| fallback`, so a default build stays byte-equivalent to demo-basic.
+    __API_BASE__: JSON.stringify(process.env.VITE_API_BASE ?? ''),
+    __CELL_LANGUAGE__: JSON.stringify(process.env.VITE_CELL_LANGUAGE ?? ''),
+    __CELL_FORMAT__: JSON.stringify(process.env.VITE_CELL_FORMAT ?? ''),
+    __CELL_LOCATION__: JSON.stringify(process.env.VITE_CELL_LOCATION ?? ''),
+    __GREETING_SOURCE__: JSON.stringify(process.env.VITE_GREETING_SOURCE ?? ''),
+    __GREETING_LANGUAGE__: JSON.stringify(process.env.VITE_GREETING_LANGUAGE ?? ''),
+    __SCHEMA_SOURCE__: JSON.stringify(process.env.VITE_SCHEMA_SOURCE ?? ''),
+    __SCHEMA_LANGUAGE__: JSON.stringify(process.env.VITE_SCHEMA_LANGUAGE ?? ''),
   },
   server: {
     proxy: {
-      [`${STATIC_ROOT}/${RESOURCES_ROOT}`]: {
+      // Dev proxy: at the dev root the API lives under `/api`.
+      [`/${RESOURCES_ROOT}`]: {
         target: `https://localhost:${YETI_PORT}`,
         changeOrigin: true,
         secure: false,
