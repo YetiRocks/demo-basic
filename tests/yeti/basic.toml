@@ -1,0 +1,253 @@
+# demo-basic: the Greeting resource and the TableName counter table.
+# Read cases are read-only; the counter cases write demo data and restore it.
+
+
+[[case]]
+name = "Greeting answers its JSON"
+protocol = "http"
+path = "/api/greeting"
+[case.expect]
+status = 200
+content_type = "json"
+shape = "object"
+[[case.expect.json]]
+pointer = "/greeting"
+equals = "Hello, World!"
+
+
+[[case]]
+name = "a path under api that nothing serves is a problem 404"
+protocol = "http"
+path = "/api/yt-absent-{run}"
+[case.expect]
+status = 404
+content_type = "application/problem+json"
+shape = "problem"
+
+
+[[case]]
+name = "list TableName"
+protocol = "http"
+path = "/api/tablename/?limit=2"
+[case.expect]
+status = 200
+content_type = "json"
+shape = "array"
+[[case.expect.json]]
+pointer = "/0/id"
+type = "string"
+
+
+[[case]]
+name = "get TableName main-counter"
+protocol = "http"
+path = "/api/tablename/main-counter"
+[case.expect]
+status = 200
+content_type = "json"
+shape = "object"
+[[case.expect.json]]
+pointer = "/id"
+equals = "main-counter"
+[[case.expect.json]]
+pointer = "/count"
+equals = 0
+
+
+[[case]]
+name = "absent TableName row is a problem 404"
+protocol = "http"
+path = "/api/tablename/yt-absent-{run}"
+[case.expect]
+status = 404
+content_type = "application/problem+json"
+shape = "problem"
+
+
+[[case]]
+name = "GraphQL list TableName"
+protocol = "graphql"
+query = "{ TableName(limit: 1) { id } }"
+[case.expect]
+status = 200
+content_type = "json"
+[[case.expect.json]]
+pointer = "/data/TableName"
+type = "array"
+[[case.expect.json]]
+pointer = "/data/TableName/0/id"
+type = "string"
+
+
+[[case]]
+name = "TableName rows carry an integer count"
+protocol = "http"
+path = "/api/tablename/?limit=1"
+[case.expect]
+status = 200
+content_type = "json"
+[[case.expect.json]]
+pointer = "/0/count"
+type = "integer"
+
+
+[[case]]
+name = "GraphQL TableName by id"
+protocol = "graphql"
+query = "{ TableName(id: \"main-counter\") { id count } }"
+[case.expect]
+status = 200
+content_type = "json"
+[[case.expect.json]]
+pointer = "/data/TableName/id"
+equals = "main-counter"
+[[case.expect.json]]
+pointer = "/data/TableName/count"
+type = "integer"
+
+
+[[case]]
+name = "GraphQL unknown field is an error"
+protocol = "graphql"
+query = "{ yt_nope }"
+[case.expect]
+status = 400
+content_type = "json"
+[[case.expect.json]]
+pointer = "/errors/0/message"
+type = "string"
+
+
+[[case]]
+name = "MCP initialize"
+protocol = "mcp"
+rpc = "initialize"
+[case.expect]
+status = 200
+[[case.expect.json]]
+pointer = "/result/serverInfo/name"
+type = "string"
+[[case.expect.json]]
+pointer = "/result/protocolVersion"
+type = "string"
+
+
+[[case]]
+name = "MCP tools/list names the table tools"
+protocol = "mcp"
+rpc = "tools/list"
+[case.expect]
+status = 200
+contains = "tablename_list"
+[[case.expect.json]]
+pointer = "/result/tools"
+type = "array"
+[[case.expect.json]]
+pointer = "/result/tools/0/name"
+type = "string"
+
+
+[[case]]
+name = "MCP tools/call tablename_list"
+protocol = "mcp"
+rpc = "tools/call"
+params = { name = "tablename_list", arguments = { limit = 1 } }
+[case.expect]
+status = 200
+[[case.expect.json]]
+pointer = "/result/isError"
+equals = false
+[[case.expect.json]]
+pointer = "/result/content/0/type"
+equals = "text"
+[[case.expect.json]]
+pointer = "/result/content/0/text"
+type = "string"
+
+
+[[case]]
+name = "MCP unknown method is a JSON-RPC error"
+protocol = "mcp"
+rpc = "no/such/method"
+[case.expect]
+status = 200
+[[case.expect.json]]
+pointer = "/error/code"
+equals = -32601
+
+
+[[case]]
+name = "SSE opens on TableName"
+protocol = "sse"
+path = "/api/tablename?stream=sse"
+
+
+[[case]]
+name = "gRPC-Web opens on TableName"
+protocol = "grpcweb"
+path = "/api/tablename?stream=grpcweb"
+
+
+[[case]]
+name = "WebSocket opens on TableName"
+protocol = "ws"
+path = "/api/tablename"
+
+
+[[case]]
+name = "MQTT subscribes to TableName"
+protocol = "mqtt"
+table = "TableName"
+
+
+[[case]]
+name = "anonymous create is refused (public grant is read, update)"
+protocol = "http"
+method = "POST"
+path = "/api/tablename"
+json = { id = "yt-{run}", count = 1 }
+[case.expect]
+status = 401
+content_type = "application/problem+json"
+shape = "problem"
+
+
+[[case]]
+name = "anonymous update sets the counter"
+protocol = "http"
+method = "PUT"
+path = "/api/tablename/main-counter"
+json = { count = 7 }
+[case.expect]
+status = 200
+content_type = "json"
+[[case.expect.json]]
+pointer = "/count"
+equals = 7
+
+
+[[case]]
+name = "the counter reads back what was set"
+protocol = "http"
+path = "/api/tablename/main-counter"
+mutates = true
+[case.expect]
+status = 200
+content_type = "json"
+[[case.expect.json]]
+pointer = "/count"
+equals = 7
+
+
+[[case]]
+name = "the counter is restored to 0"
+protocol = "http"
+method = "PUT"
+path = "/api/tablename/main-counter"
+json = { count = 0 }
+[case.expect]
+status = 200
+content_type = "json"
+[[case.expect.json]]
+pointer = "/count"
+equals = 0

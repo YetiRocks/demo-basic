@@ -10,4 +10,8 @@ schemas = "schemas/basic.graphql"
 resources = "resources/*.rs"
 static = { path = "web", root = "/", source = "source", spa = true, build = "npm install && npm run build" }
 
+[package.metadata.app.tests]
+dir = "tests/yeti"
+writes = "disposable"
+
 [dependencies]
