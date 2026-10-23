@@ -175,7 +175,7 @@ This single type definition produces:
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/demo-basic/api/TableName` | GET | List all records (with `?limit=N`) |
-| `/demo-basic/api/TableName` | POST | Create a new record |
+| `/demo-basic/api/TableName/` | POST | Create a new record |
 | `/demo-basic/api/TableName/{id}` | GET | Read a single record |
 | `/demo-basic/api/TableName/{id}` | PUT | Update a record |
 | `/demo-basic/api/TableName/{id}` | DELETE | Delete a record |
@@ -315,7 +315,7 @@ In development mode, all endpoints are accessible without authentication regardl
 | `GET /api/TableName` | No | Public read via schema directive |
 | `GET /api/TableName/{id}` | No | Public read via schema directive |
 | `PUT /api/TableName/{id}` | No | Public update via schema directive |
-| `POST /api/TableName` | Yes | Create not listed in public access |
+| `POST /api/TableName/` | Yes | Create not listed in public access |
 | `DELETE /api/TableName/{id}` | Yes | Delete not listed in public access |
 | `GET /api/greeting` | No | Custom resources are public by default in dev |
 | Static files (`/`) | No | Always public |
